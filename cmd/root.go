@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"fmt"
+  "log"
   "os"
 
 	homedir "github.com/mitchellh/go-homedir"
+  "github.com/adamazing/scriptle/pkg/scriptle"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -19,7 +21,32 @@ var rootCmd = &cobra.Command{
   Short:  "Learn yo' lines",
   Long:   "A tool to help you learn lines, cues, and stage directions from the command line.",
   Run:    func(cmd *cobra.Command, args []string){
-            fmt.Println("In the command")
+            // fmt.Println("In the command")
+
+            flagStruct := scriptle.Flags {
+              Foo: filePath,
+            }
+
+            stat, err := os.Stdin.Stat()
+            if err != nil {
+              log.Fatal(err)
+            }
+
+            if (stat.Mode() & os.ModeCharDevice) == 0 {
+              err := scriptle.FromStdin(length, &flagStruct)
+              if err != nil {
+                log.Println("Error: Could not read stdin.", err)
+                os.Exit(1)
+              }
+
+
+            } else if filePath != "" {
+
+            } else {
+              log.Println("Error: Could not use stdin or file")
+            }
+
+
           },
 }
 
@@ -51,7 +78,7 @@ func initConfig() {
   viper.AutomaticEnv()
 
   err := viper.ReadInConfig()
-  if err == nil {
-    // fmt.Fprintln(os.Stderr, "Using config file: ", viper.ConfigFileUsed())
+  if err != nil {
+    fmt.Fprintln(os.Stderr, "Using config file: ", viper.ConfigFileUsed())
   }
 }
